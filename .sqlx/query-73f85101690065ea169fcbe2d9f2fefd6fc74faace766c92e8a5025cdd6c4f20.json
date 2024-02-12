@@ -1,0 +1,31 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT new_balance, available_limit FROM perform_transaction($1, $2, $3, $4)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "new_balance",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "available_limit",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Int4",
+        "Int8",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "73f85101690065ea169fcbe2d9f2fefd6fc74faace766c92e8a5025cdd6c4f20"
+}
