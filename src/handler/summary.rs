@@ -1,8 +1,5 @@
 use axum::{
-    extract::{Path, State},
-    http::StatusCode,
-    response::{IntoResponse, Response},
-    Json,
+    body::Body, extract::{Path, State}, http::StatusCode, response::{IntoResponse, Response}, Json
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -57,7 +54,7 @@ pub async fn handle(State(app_state): State<AppState>, Path(account_id): Path<i3
         "SELECT balance, available_limit, latest_entries FROM lookup_statement($1)",
         account_id
     )
-    .fetch_optional(&app_state.db_pool)
+    .fetch_optional(&app_state.db_pool_ro)
     .await;
 
     match result {
@@ -88,16 +85,10 @@ pub async fn handle(State(app_state): State<AppState>, Path(account_id): Path<i3
 
                     (StatusCode::OK, Json(json!(summary_output))).into_response()
                 }
-                Err(_err) => {
-                    (StatusCode::UNPROCESSABLE_ENTITY, Json(json!({"ok": false}))).into_response()
-                }
+                Err(_err) => (StatusCode::UNPROCESSABLE_ENTITY, Body::empty()).into_response(),
             }
         }
-        Ok(None) => {
-            (StatusCode::NOT_FOUND, Json(json!({"ok": false}))).into_response()
-        }
-        Err(_err) => {
-            (StatusCode::UNPROCESSABLE_ENTITY, Json(json!({"ok": false}))).into_response()
-        }
+        Ok(None) => (StatusCode::NOT_FOUND, Body::empty()).into_response(),
+        Err(_err) => (StatusCode::UNPROCESSABLE_ENTITY, Body::empty()).into_response(),
     }
 }

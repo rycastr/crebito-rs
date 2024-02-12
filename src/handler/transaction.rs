@@ -1,4 +1,5 @@
 use axum::{
+    body::Body,
     extract::{Path, State},
     http::StatusCode,
     response::{IntoResponse, Response},
@@ -39,7 +40,7 @@ pub async fn handle(
     Json(tx_input): Json<TransactionInput>,
 ) -> Response {
     if tx_input.descricao.len() > 10 || tx_input.descricao.len() < 1 {
-        return (StatusCode::UNPROCESSABLE_ENTITY, Json(json!({"ok": false}))).into_response();
+        return (StatusCode::UNPROCESSABLE_ENTITY, Body::empty()).into_response();
     }
 
     let result = sqlx::query_as!(
@@ -60,21 +61,11 @@ pub async fn handle(
         Ok(tx_output) => (StatusCode::OK, Json(json!(tx_output))).into_response(),
         Err(err) => match err {
             sqlx::Error::Database(e) => match e.code().unwrap_or_default().as_ref() {
-                "TRX01" => (StatusCode::NOT_FOUND, Json(json!({"ok": false}))).into_response(),
-                "TRX02" => {
-                    (StatusCode::UNPROCESSABLE_ENTITY, Json(json!({"ok": false}))).into_response()
-                }
-                _ => (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    Json(json!({"ok": false})),
-                )
-                    .into_response(),
+                "TRX01" => (StatusCode::NOT_FOUND, Body::empty()).into_response(),
+                "TRX02" => (StatusCode::UNPROCESSABLE_ENTITY, Body::empty()).into_response(),
+                _ => (StatusCode::INTERNAL_SERVER_ERROR, Body::empty()).into_response(),
             },
-            _ => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(json!({"ok": false})),
-            )
-                .into_response(),
+            _ => (StatusCode::INTERNAL_SERVER_ERROR, Body::empty()).into_response(),
         },
     }
 }
